@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import os
 
 # Khởi tạo Flask app
 app = Flask(__name__)
