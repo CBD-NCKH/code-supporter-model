@@ -8,7 +8,7 @@ app = Flask(__name__)
 # Cấu hình thiết bị và mô hình
 device = "cpu"
 checkpoint = "bigcode/starcoder"
-auth_token = "YOUR_AUTH_TOKEN"  # Thay bằng token thực tế nếu cần
+auth_token = os.getenv("MODEL_KEY")
 
 # Tải Tokenizer và Mô hình
 print("Loading tokenizer...")
