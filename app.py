@@ -3,27 +3,26 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
 
-# Khởi tạo Flask app
-app = Flask(__name__)
-
-# Cấu hình thiết bị và mô hình
-device = "cpu"
-auth_token = os.getenv("MODEL_KEY")
-checkpoint = "bigcode/starcoder"
-print(f"Using auth_token: {auth_token}")
-
-# Tải Tokenizer và Mô hình
-print("Loading tokenizer...")
+# Tải tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
 
-print("Loading model...")
-model = torch.quantization.quantize_dynamic(
-    model=AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token),
-    qconfig_spec={torch.nn.Linear},
-    dtype=torch.qint8
-)
-model.to(device)
-print("Model loaded successfully.")
+# Hàm tải mô hình
+def load_model():
+    global model
+    if model is None:  # Kiểm tra tránh tải lại
+        print("Loading model with quantization...")
+        model = torch.quantization.quantize_dynamic(
+            model=AutoModelForCausalLM.from_pretrained(checkpoint, token=auth_token),
+            qconfig_spec={torch.nn.Linear},
+            dtype=torch.qint8
+        )
+        print("Model loaded successfully.")
+
+model = None
+# Tải mô hình trong luồng riêng
+threading.Thread(target=load_model).start()
+
+app = Flask(__name__)
 
 # API để sinh văn bản
 @app.route('/generate', methods=['POST'])
