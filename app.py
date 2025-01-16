@@ -3,6 +3,12 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
 
+# Tải mô hình StarCoder
+device = "cpu"
+print(f"Using device: {device}")
+auth_token = os.getenv("MODEL_KEY")
+checkpoint = "bigcode/starcoder"
+
 # Tải tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
 
