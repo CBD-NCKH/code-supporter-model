@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import os
+import threading
 
 # Tải mô hình StarCoder
 device = "cpu"
