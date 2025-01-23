@@ -8,6 +8,7 @@ device = "cpu"
 print(f"Using device: {device}")
 auth_token = os.getenv("MODEL_KEY")
 checkpoint = "bigcode/starcoder"
+print(f"Auth token: {auth_token}")
 
 # Tải tokenizer
 tokenizer = AutoTokenizer.from_pretrained(checkpoint, token=auth_token)
