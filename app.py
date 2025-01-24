@@ -4,6 +4,9 @@ import torch
 import os
 import threading
 
+# Thiết lập thư mục cache cho Hugging Face
+os.environ["TRANSFORMERS_CACHE"] = "./cache/huggingface"
+
 # Tải mô hình StarCoder
 device = "cpu"
 print(f"Using device: {device}")
@@ -38,7 +41,7 @@ def generate_text():
     try:
         data = request.json
         prompt = data.get('prompt', '')
-        max_length = data.get('max_length', 500)
+        max_length = data.get('max_length', 5000)
         temperature = data.get('temperature', 0.7)
 
         if not prompt:
