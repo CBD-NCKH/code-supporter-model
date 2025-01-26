@@ -4,34 +4,12 @@ import torch
 import os
 import threading
 
-# Thiết lập thư mục cache cho Hugging Face
-os.environ["TRANSFORMERS_CACHE"] = "./cache/huggingface"
-
-# Tải mô hình StarCoder
 device = "cpu"
 print(f"Using device: {device}")
-auth_token = os.getenv("MODEL_KEY")
-checkpoint = "bigcode/starcoder"
-print(f"Auth token: {auth_token}")
 
 # Tải tokenizer
-tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_auth_token=auth_token)
-
-# Hàm tải mô hình
-def load_model():
-    global model
-    if model is None:  # Kiểm tra tránh tải lại
-        print("Loading model with quantization...")
-        model = torch.quantization.quantize_dynamic(
-            model=AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=auth_token),
-            qconfig_spec={torch.nn.Linear},
-            dtype=torch.qint8
-        )
-        print("Model loaded successfully.")
-
-model = None
-# Tải mô hình trong luồng riêng
-threading.Thread(target=load_model).start()
+tokenizer = AutoTokenizer.from_pretrained('replit/replit-code-v1-3b', trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained('replit/replit-code-v1-3b', trust_remote_code=True)
 
 app = Flask(__name__)
 
@@ -47,16 +25,19 @@ def generate_text():
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
 
-        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+        inputs = tokenizer.encode(prompt, return_tensors="pt")        
+        # Sinh văn bản
         outputs = model.generate(
-            inputs.input_ids,
+            inputs,
             max_length=max_length,
             temperature=temperature,
-            pad_token_id=tokenizer.eos_token_id
-        )
-        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-        return jsonify({"generated_text": generated_text})
+            top_p=0.95,
+            top_k=4,
+            eos_token_id=tokenizer.eos_token_id,
+            num_return_sequences=1  # Trả về 1 chuỗi đầu ra
+        )        
+        # Giải mã kết quả đầu ra
+        return tokenizer.decode(outputs[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
     except Exception as e:
         print(f"Error generating text: {e}")
         return jsonify({"error": "An error occurred while generating text"}), 500
